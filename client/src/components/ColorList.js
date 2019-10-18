@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosWithAuth from './axios';
+import { prependOnceListener } from "cluster";
+
+const colorsURL = 'http://localhost:5000/api/colors'
 
 const initialColor = {
   color: "",
   code: { hex: "" }
 };
 
-const ColorList = ({ colors, updateColors }) => {
+const ColorList = ({ colors, updateColors, getColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
@@ -18,13 +21,41 @@ const ColorList = ({ colors, updateColors }) => {
 
   const saveEdit = e => {
     e.preventDefault();
+    const payload1 = e.target[0].value
+    const payload2 = e.target[1].value
+    // const payload = {payload1, payload2}
+    const colorId = colorToEdit.id
     // Make a put request to save your updated color
     // think about where will you get the id from...
     // where is is saved right now?
+
+    axiosWithAuth().put(
+      `${colorsURL}/${colorId}`,
+      {color: payload1, 
+      code: {hex: payload2},
+      id: colorId}
+    )
+      .then(res => {
+        getColors();
+        // updateColors(res.data);
+        setEditing(false);
+      })
+      .catch(err => {
+      });
   };
+
+  console.log(colors);
 
   const deleteColor = color => {
     // make a delete request to delete this color
+    // axiosWithAuth().delete(`${colorsURL}/${colorToEdit.id}`)
+    //   .then(({data}) => {
+    //     debugger
+    //     updateColors(colors.filter(color => color.id !== data));
+    //   })
+    //   .catch(err => {
+    //     debugger
+    //   })
   };
 
   return (
