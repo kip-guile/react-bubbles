@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axiosWithAuth from './axios';
-import { prependOnceListener } from "cluster";
+import { Formik, Form, Field } from 'formik';
 
 const colorsURL = 'http://localhost:5000/api/colors'
 
@@ -48,14 +48,34 @@ const ColorList = ({ colors, updateColors, getColors }) => {
 
   const deleteColor = color => {
     // make a delete request to delete this color
-    // axiosWithAuth().delete(`${colorsURL}/${colorToEdit.id}`)
-    //   .then(({data}) => {
-    //     debugger
-    //     updateColors(colors.filter(color => color.id !== data));
-    //   })
-    //   .catch(err => {
-    //     debugger
-    //   })
+    axiosWithAuth().delete(`${colorsURL}/${color.id}`)
+      .then(({data}) => {
+        updateColors(colors.filter(color => color.id !== data));
+        setEditing(false);
+      })
+      .catch(err => {
+    
+      })
+  };
+
+  const addColor = (formValues, resetForm) => {
+    axiosWithAuth().post(colorsURL, {color: formValues.color, 
+      code: {hex: formValues.hex}
+      })
+      .then(res => {
+        getColors();
+        resetForm({});
+      })
+      .catch(err => {
+        
+      })
+  }
+
+  var styles2 = {
+    margin: '5px',
+    width: '200px',
+    height: '50px',
+    borderRadius: '10px',
   };
 
   return (
@@ -109,6 +129,24 @@ const ColorList = ({ colors, updateColors, getColors }) => {
       )}
       <div className="spacer" />
       {/* stretch - build another form here to add a color */}
+
+      <Formik
+        initialValues={{color: '', hex: ''}}
+        onSubmit={addColor}
+        render={() => (
+            <Form>
+              <div>
+                <Field style={styles2} name='color' type="text" placeholder='color' />
+              </div>
+              <div>
+                <Field style={styles2} name='hex' type="text" placeholder='hex' />
+              </div>
+               <div>
+                <input type='submit' />
+              </div>
+            </Form>
+        )}
+      />
     </div>
   );
 };
